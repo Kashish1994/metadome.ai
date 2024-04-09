@@ -3,7 +3,7 @@ package requests
 import "github.com/eduhub/util"
 
 type LoginRequest struct {
-	Email    string `json:"email"`
+	Username string `json:"username"`
 	Phone    string `json:"phone"`
 	Password string `json:"password"`
 }

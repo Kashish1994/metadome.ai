@@ -105,7 +105,7 @@ func (uc UserController) Login(ctx *gin.Context) {
 }
 
 func (uc UserController) ValidateLogin(request *requests.LoginRequest) error {
-	if request.Email == util.EmptyString || request.Password == util.EmptyString {
+	if request.Username == util.EmptyString || request.Password == util.EmptyString {
 		return errors.New("invalid request")
 	}
 	return nil

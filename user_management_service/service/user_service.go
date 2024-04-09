@@ -95,7 +95,7 @@ func (u *UserServiceImpl) RegisterUser(request *requests.SignUpRequest) (*reques
 }
 
 func (u *UserServiceImpl) Login(userRequest *requests.LoginRequest) (*requests.LoginResponse, error) {
-	user, err := u.GetUser(userRequest.Email)
+	user, err := u.GetUser(userRequest.Username)
 	if err != nil {
 		return nil, err
 	}

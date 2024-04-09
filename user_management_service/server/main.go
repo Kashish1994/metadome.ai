@@ -32,10 +32,10 @@ func main() {
 	// Init Service
 	userService := service.InitUserService(db)
 
+	// Register Routes
 	userRouter.POST("/", controller.UserController{UserService: userService}.RegisterUser)
 	userRouter.PUT("/", controller.UserController{UserService: userService}.UpdateUser)
 	userRouter.DELETE("/", controller.UserController{UserService: userService}.DeleteUser)
-
 	userRouter.POST("/login", controller.UserController{UserService: userService}.Login)
 
 	server := &http.Server{
