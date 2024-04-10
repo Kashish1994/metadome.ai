@@ -1,7 +1,9 @@
 package repositories
 
 import (
+	"fmt"
 	"github.com/eduhub/models"
+	"github.com/eduhub/security"
 	"github.com/lib/pq"
 	"gorm.io/gorm"
 	"strings"
@@ -28,11 +30,15 @@ func (r *RoomsRepository) PersistMessage(roomID string, senderID string, receive
 	roomID2 := res[1] + "_" + res[0]
 	rm := &models.Room{}
 	r.Db.First(&models.Room{}).Last(rm, "room_id IN ?", []string{roomID2, roomID})
+	content, err := security.Encrypt(message)
+	if err != nil {
+		fmt.Println(err)
+	}
 	r.Db.Create(&models.Message{
 		RoomID:     rm.ID,
 		SenderID:   senderID,
 		ReceiverID: receiverID,
-		Content:    message,
+		Content:    content,
 		CreatedAt:  time.Time{},
 	})
 	return nil

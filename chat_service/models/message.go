@@ -9,7 +9,7 @@ type Message struct {
 	gorm.Model
 	SenderID    string
 	ReceiverID  string
-	Content     string
+	Content     []byte
 	ContentType string    `default:"text/plain; charset=utf-8"`
 	CreatedAt   time.Time `gorm:"autoCreateTime"`
 	RoomID      uint
