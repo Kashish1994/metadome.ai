@@ -6,4 +6,5 @@ type UserResponse struct {
 	LastName  string `json:"lastname"`
 	Address   string `json:"address"`
 	Phone     string `json:"phone"`
+	ID        uint   `json:"id"`
 }

@@ -48,6 +48,7 @@ func (u *UserServiceImpl) FetchUser(token string) (*response.UserResponse, error
 		LastName:  user.LastName,
 		Address:   user.Address,
 		Phone:     user.Phone,
+		ID:        user.ID,
 	}, nil
 }
 

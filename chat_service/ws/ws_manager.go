@@ -5,12 +5,15 @@ import (
 	"github.com/eduhub/helper"
 	"github.com/eduhub/service"
 	"github.com/gorilla/websocket"
+	"gorm.io/gorm"
 	"net/http"
 	"strings"
 	"sync"
 )
 
-type WebSocketManager struct{}
+type WebSocketManager struct {
+	Db *gorm.DB
+}
 
 var once sync.Once
 var Rooms []*helper.Room
@@ -21,9 +24,9 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-func GetWebSocketManager() *WebSocketManager {
+func GetWebSocketManager(Db *gorm.DB) *WebSocketManager {
 	once.Do(func() {
-		wbManager = &WebSocketManager{}
+		wbManager = &WebSocketManager{Db: Db}
 	})
 	return wbManager
 }
@@ -34,7 +37,8 @@ func (wsm *WebSocketManager) InitChatRoom(w http.ResponseWriter, r *http.Request
 	user, err := service.GetAuthServiceInstance().AuthoriseAndFetchUser(token)
 	if err != nil {
 		fmt.Printf(err.Error())
-		panic(err)
+		fmt.Fprintf(w, "error authorising user")
+		return
 	}
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -57,7 +61,6 @@ func (wsm *WebSocketManager) AddToRoom(senderID, receiverID, roomID string, conn
 	key2 := receiverID + "_" + senderID
 
 	for _, room := range Rooms {
-		fmt.Printf("Room (%+v) Keys (%+v) (%+v) \n", room.RoomID, key2, key1)
 		if room.RoomID == key1 || room.RoomID == key2 {
 			connections := room.Connections
 			connections[senderID] = conn
