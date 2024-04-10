@@ -46,7 +46,7 @@
 - [ ] Message Storage
 
 ### Start UM Server
-- **Backend**: go run server/main.go.
+- **Backend**: go run server/user-management-service/main.go.
 
 ### Start Chat Application Server
-- **Backend**: go run server/main.go.
+- **Backend**: go run server/chat-service/main.go.
