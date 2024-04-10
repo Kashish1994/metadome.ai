@@ -143,10 +143,7 @@ func (u *UserServiceImpl) Login(userRequest *requests.LoginRequest) (*requests.L
 
 func (u *UserServiceImpl) GetUser(username string) (*models.User, error) {
 	user := &models.User{}
-	err := u.Db.Last(user, "user_name = ? ", username).Error
-	if err != nil {
-		return nil, err
-	}
+	u.Db.Last(user, "user_name = ? ", username)
 	return user, nil
 }
 
@@ -154,9 +151,5 @@ func InitUserService(Db *gorm.DB) UserService {
 	once.Do(func() {
 		userService = &UserServiceImpl{Db: Db}
 	})
-	return userService
-}
-
-func GetUserServiceExistingInstance() UserService {
 	return userService
 }

@@ -3,8 +3,10 @@ package ws
 import (
 	"fmt"
 	"github.com/eduhub/helper"
+	"github.com/eduhub/service"
 	"github.com/gorilla/websocket"
 	"net/http"
+	"strings"
 	"sync"
 )
 
@@ -26,16 +28,22 @@ func GetWebSocketManager() *WebSocketManager {
 	return wbManager
 }
 
-// InitChatRoom -> Creates/Adds users to the chat rooms
+// InitChatRoom -> Authorises & Creates/Adds users to the chat rooms
 func (wsm *WebSocketManager) InitChatRoom(w http.ResponseWriter, r *http.Request) {
+	token := strings.Split(r.Header.Get("Authorization"), " ")[1]
+	user, err := service.GetAuthServiceInstance().AuthoriseAndFetchUser(token)
+	if err != nil {
+		fmt.Printf(err.Error())
+		panic(err)
+	}
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	defer conn.Close()
-
-	sender := r.URL.Query().Get("sender")
+	fmt.Printf("User (%+v)", user.Username)
+	sender := user.Username
 	receiver := r.URL.Query().Get("receiver")
 	roomID := sender + "_" + receiver // Can encrypt the keys and then use it as RoomID
 	wsm.AddToRoom(sender, receiver, roomID, conn)
@@ -70,7 +78,7 @@ func (wsm *WebSocketManager) AddToRoom(senderID, receiverID, roomID string, conn
 	}
 	Rooms = append(Rooms, room)
 	fmt.Println(len(room.Connections))
-	fmt.Printf("Created new room (%+v) (%+v)", room.RoomID, len(room.Connections))
+	fmt.Printf("Created new room (%+v) (%+v) \n", room.RoomID, len(room.Connections))
 	wsm.Subscribe(conn, room)
 	return room
 }
@@ -95,7 +103,7 @@ func (wsm *WebSocketManager) ListenBroadCastAndSendToConnectedClients(room *help
 	for {
 		msg := <-room.Broadcaster
 		for sender, conn := range room.Connections {
-			if conn != nil && sender != msg.Username {
+			if conn != nil && sender != msg.Sender {
 				err := conn.WriteJSON(msg)
 				if err != nil {
 					fmt.Println(err)
