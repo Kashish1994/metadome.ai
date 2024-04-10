@@ -16,8 +16,8 @@
 5. **Authenticate**: To authenticate a user, the system receives the user's credentials (username and password). It verifies the credentials against the stored user data in the database. If the credentials match, the user is authenticated.
 
 ### Solution Architecture:
-- **Backend**: RESTful API server built using Golang or Node.js.
-- **Database**: MongoDB or PostgreSQL for storing user data.
+- **Backend**: RESTful API server built using Golang and Gin.
+- **Database**: PostgreSQL for storing user data.
 - **Authentication**: JWT (JSON Web Tokens) for user authentication and session management.
 - **Security**: Encryption (e.g., bcrypt) for storing sensitive user information.
 - **Microservices**: User service,
