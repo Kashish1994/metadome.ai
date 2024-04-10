@@ -15,6 +15,10 @@ type UserController struct {
 	UserService service.UserService
 }
 
+func (uc UserController) FetchUser(ctx *gin.Context) {
+
+}
+
 func (uc UserController) RegisterUser(ctx *gin.Context) {
 	signUpRequest := &requests.SignUpRequest{}
 	err := ctx.ShouldBindJSON(signUpRequest)

@@ -37,6 +37,7 @@ func main() {
 	userRouter.PUT("/", controller.UserController{UserService: userService}.UpdateUser)
 	userRouter.DELETE("/", controller.UserController{UserService: userService}.DeleteUser)
 	userRouter.POST("/login", controller.UserController{UserService: userService}.Login)
+	userRouter.GET("/", controller.UserController{UserService: userService}.FetchUser)
 
 	server := &http.Server{
 		Addr:           ":8888",
