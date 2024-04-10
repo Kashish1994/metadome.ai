@@ -6,6 +6,7 @@ import (
 	"github.com/eduhub/models"
 	"github.com/eduhub/requests"
 	"github.com/eduhub/requests/validators"
+	"github.com/eduhub/response"
 	"gorm.io/gorm"
 	"sync"
 )
@@ -16,6 +17,7 @@ type UserService interface {
 	RegisterUser(request *requests.SignUpRequest) (*requests.BasicResponse, error)
 	UpdateUser(request *requests.UpdateRequest) (*requests.BasicResponse, error)
 	DeleteUser(username string) (*requests.BasicResponse, error)
+	FetchUser(token string) (*response.UserResponse, error)
 }
 type UserServiceImpl struct {
 	Db *gorm.DB
@@ -23,6 +25,31 @@ type UserServiceImpl struct {
 
 var userService *UserServiceImpl
 var once sync.Once
+
+func (u *UserServiceImpl) FetchUser(token string) (*response.UserResponse, error) {
+	userToken, err := helper.DecodeToken(token)
+	if err != nil {
+		return nil, err
+	}
+	userName, err := userToken.Claims.GetSubject()
+	if err != nil {
+		return nil, err
+	}
+	user, err := u.GetUser(userName)
+	if err != nil {
+		return nil, err
+	}
+	if user.ID == 0 {
+		return nil, errors.New("user not found")
+	}
+	return &response.UserResponse{
+		Username:  userName,
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		Address:   user.Address,
+		Phone:     user.Phone,
+	}, nil
+}
 
 func (u *UserServiceImpl) DeleteUser(username string) (*requests.BasicResponse, error) {
 	user, err := u.GetUser(username)

@@ -1,16 +1,15 @@
 package middleware
 
 import (
-	"fmt"
 	"github.com/eduhub/helper"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strings"
 )
 
+// ValidateToken --> Middleware to make sure the API's are Authenticated
 func ValidateToken() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		fmt.Println("-->", c.Request.URL.Path)
 		if c.Request.URL.Path == "/metadome-api/user/login" || c.Request.URL.Path == "/metadome-api/user/" {
 			c.Set("user", "Basic")
 			c.Next()

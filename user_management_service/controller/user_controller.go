@@ -9,6 +9,7 @@ import (
 	"github.com/eduhub/util"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"strings"
 )
 
 type UserController struct {
@@ -16,7 +17,15 @@ type UserController struct {
 }
 
 func (uc UserController) FetchUser(ctx *gin.Context) {
-
+	value := ctx.GetHeader("Authorization")
+	token := strings.Split(value, " ")[1]
+	resp, err := uc.UserService.FetchUser(token)
+	if err != nil {
+		ctx.Header("Content-Type", "application/json")
+		ctx.JSON(http.StatusBadRequest, &requests.BasicResponse{Success: false, Message: err.Error()})
+		return
+	}
+	ctx.JSON(http.StatusOK, resp)
 }
 
 func (uc UserController) RegisterUser(ctx *gin.Context) {

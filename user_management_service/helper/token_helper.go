@@ -2,6 +2,7 @@ package helper
 
 import (
 	"fmt"
+	"github.com/eduhub/util"
 	"github.com/golang-jwt/jwt/v5"
 	"time"
 )
@@ -17,10 +18,10 @@ func GenerateToken(email string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256,
 		jwt.MapClaims{
 			"sub": email,
-			"exp":   time.Now().Add(time.Hour * 24).Unix(),
+			"exp": time.Now().Add(time.Hour * 24).Unix(),
 		})
 	fmt.Println("tokenClaims", token.Claims)
-	var secretKey = []byte("secret-key")
+	var secretKey = []byte(util.SecretKey)
 	tokenString, err := token.SignedString(secretKey)
 	if err != nil {
 		fmt.Println("err", err)
@@ -35,7 +36,7 @@ func DecodeToken(tokenString string) (*jwt.Token, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-		return []byte("secret-key"), nil
+		return []byte(util.SecretKey), nil
 	})
 
 	if err != nil {
