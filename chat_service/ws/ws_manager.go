@@ -103,7 +103,7 @@ func (wsm *WebSocketManager) Subscribe(conn *websocket.Conn, room *helper.Room) 
 		}
 		room.Broadcaster <- &msg
 		repo := repositories.GetRoomsRepositoryInstance(wsm.Db)
-		repo.PersistMessage(room.RoomID, room.SenderUsername, room.ReceiverUsername, msg.Content)
+		repo.PersistMessage(room.RoomID, msg.Sender, msg.Receiver, msg.Content)
 	}
 }
 
