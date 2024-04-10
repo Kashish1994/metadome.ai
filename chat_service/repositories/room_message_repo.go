@@ -6,6 +6,7 @@ import (
 	"gorm.io/gorm"
 	"strings"
 	"sync"
+	"time"
 )
 
 type RoomsRepository struct {
@@ -22,8 +23,19 @@ func GetRoomsRepositoryInstance(Db *gorm.DB) *RoomsRepository {
 	return roomsRepo
 }
 
-func (r *RoomsRepository) PersistMessage(room *models.Room) error {
-
+func (r *RoomsRepository) PersistMessage(roomID string, senderID string, receiverID string, message string) error {
+	res := strings.Split(roomID, "_")
+	roomID2 := res[1] + "_" + res[0]
+	rm := &models.Room{}
+	r.Db.First(&models.Room{}).Last(rm, "room_id IN ?", []string{roomID2, roomID})
+	r.Db.Create(&models.Message{
+		RoomID:     rm.ID,
+		SenderID:   senderID,
+		ReceiverID: receiverID,
+		Content:    message,
+		CreatedAt:  time.Time{},
+	})
+	return nil
 }
 
 func (r *RoomsRepository) UpsertRoomAndJoinee(roomID string, joinee int64) error {
