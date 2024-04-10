@@ -3,6 +3,7 @@ package ws
 import (
 	"fmt"
 	"github.com/eduhub/helper"
+	"github.com/eduhub/repositories"
 	"github.com/eduhub/service"
 	"github.com/gorilla/websocket"
 	"gorm.io/gorm"
@@ -50,22 +51,24 @@ func (wsm *WebSocketManager) InitChatRoom(w http.ResponseWriter, r *http.Request
 	sender := user.Username
 	receiver := r.URL.Query().Get("receiver")
 	roomID := sender + "_" + receiver // Can encrypt the keys and then use it as RoomID
-	wsm.AddToRoom(sender, receiver, roomID, conn)
+	wsm.AddToRoom(sender, receiver, roomID, conn, int64(user.ID))
 }
 
 // AddToRoom --> Manages/Create existing rooms
 // Returns:
 // The Room to which user is added
-func (wsm *WebSocketManager) AddToRoom(senderID, receiverID, roomID string, conn *websocket.Conn) *helper.Room {
+func (wsm *WebSocketManager) AddToRoom(senderID, receiverID, roomID string, conn *websocket.Conn, joinee int64) *helper.Room {
 	key1 := senderID + "_" + receiverID
 	key2 := receiverID + "_" + senderID
 
+	repo := repositories.GetRoomsRepositoryInstance(wsm.Db)
 	for _, room := range Rooms {
 		if room.RoomID == key1 || room.RoomID == key2 {
 			connections := room.Connections
 			connections[senderID] = conn
 			room.Connections = connections
 			fmt.Printf("Subscribing existing room (%+v) (%+v)", room.RoomID, len(room.Connections))
+			repo.UpsertRoomAndJoinee(roomID, joinee)
 			wsm.Subscribe(conn, room)
 			return room
 		}
@@ -80,7 +83,8 @@ func (wsm *WebSocketManager) AddToRoom(senderID, receiverID, roomID string, conn
 		Connections:      connMap,
 	}
 	Rooms = append(Rooms, room)
-	fmt.Println(len(room.Connections))
+
+	repo.UpsertRoomAndJoinee(roomID, joinee)
 	fmt.Printf("Created new room (%+v) (%+v) \n", room.RoomID, len(room.Connections))
 	wsm.Subscribe(conn, room)
 	return room
@@ -89,6 +93,7 @@ func (wsm *WebSocketManager) AddToRoom(senderID, receiverID, roomID string, conn
 // Subscribe --> Subscribes the user to the incoming Broadcasts
 func (wsm *WebSocketManager) Subscribe(conn *websocket.Conn, room *helper.Room) {
 	go wsm.ListenBroadCastAndSendToConnectedClients(room)
+	fmt.Println("Subscribed", room.ReceiverUsername)
 	for {
 		var msg helper.Message
 		err := conn.ReadJSON(&msg)
@@ -96,7 +101,6 @@ func (wsm *WebSocketManager) Subscribe(conn *websocket.Conn, room *helper.Room) 
 			fmt.Println(err)
 			return
 		}
-		fmt.Println("Subscribed", room.ReceiverUsername)
 		room.Broadcaster <- &msg
 	}
 }
